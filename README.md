@@ -24,3 +24,51 @@ Setup Instructions
     git clone https://github.com/MElbahluan23/DocuBot.git
     cd DocuBot
    ```
+2. **Configure the Environment:**
+Create a file named **.env** in the project root with the following content:
+   ```
+    OPENAI_API_KEY=your_openai_api_key_here
+   ```
+Replace `your_openai_api_key_here` with your actual OpenAI API key. This file securely stores your API key so that it isn’t hardcoded into the source code.
+
+3. **Build and Run with Docker:**
+DocuBot is designed to run in a Docker container. Follow these steps:
+
+- **Build the Docker Image:**
+  Open your terminal in the project directory and run:
+  ```
+  docker build -t docubot .
+  ```
+
+- **Run the Docker Container:**
+  Once the image is built, run the container using the following command:
+  ```
+  docker run -p 8000:8000 –env-file .env docubot
+  ```
+
+4. **Access DocuBot:**
+Open your web browser and navigate to [http://localhost:8000](http://localhost:8000) to interact with DocuBot.
+
+API Endpoints (for Reference)
+------------------------------
+- **Upload PDFs:**
+- **Single File:** `POST /upload`  
+ Form Data: Key `file` (PDF files only)
+- **Multiple Files:** `POST /upload-multiple`  
+ Form Data: Key `files` (for multiple PDFs)
+
+- **Chat with DocuBot:**
+- **Endpoint:** `POST /chat`  
+ Form Data: Key `question` (your query)
+
+User Interface
+--------------
+DocuBot’s homepage includes:
+- A PDF Upload section to add your document(s)
+- A Chat section to ask questions and get responses based on the uploaded PDFs
+
+Conclusion
+----------
+DocuBot simplifies document analysis by leveraging Docker for easy deployment. Just clone the repository, set your API key in a **.env** file, and run a couple of Docker commands. You’re ready to chat with your documents!
+
+Enjoy using DocuBot!
