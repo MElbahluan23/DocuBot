@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Ensure proper rendering and touch zooming on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocuBot: Your Document Assistant</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f0f2f5, #d9e2ec);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .wrapper {
+      width: 100%;
+      max-width: 900px;
+      margin: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    header {
+      background: #007bff;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    header p {
+      margin: 5px 0 0;
+      font-size: 1rem;
+    }
+    .container {
+      padding: 20px 30px;
+    }
+    section {
+      margin-bottom: 30px;
+    }
+    h2 {
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #007bff;
+      display: inline-block;
+      padding-bottom: 5px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    input[type="file"],
+    input[type="text"] {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    input[type="file"]:focus,
+    input[type="text"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+    button {
+      padding: 12px;
+      background: #007bff;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .chat-window {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 10px;
+      height: 300px;
+      overflow-y: auto;
+      background: #f7f7f7;
+      border-radius: 5px;
+    }
+    .chat-message {
+      margin: 10px 0;
+      padding: 8px 12px;
+      border-radius: 20px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .user-message {
+      background: #d1ecf1;
+      align-self: flex-end;
+      margin-left: auto;
+      text-align: right;
+    }
+    .bot-message {
+      background: #e2e3e5;
+      align-self: flex-start;
+      text-align: left;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+      h2 {
+        font-size: 1.3rem;
+      }
+      .container {
+        padding: 15px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>DocuBot</h1>
+      <p>Your Document Assistant</p>
+    </header>
+    <div class="container">
+      <!-- Upload Section -->
+      <section id="upload-section">
+        <h2>Upload PDF Document</h2>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="files" accept="application/pdf" multiple required>
+          <button type="submit">Upload Document</button>
+        </form>
+        <div id="upload-result" style="margin-top:10px; font-weight:500;"></div>
+      </section>
+      
+      <!-- Chat Section -->
+      <section id="chat-section">
+        <h2>Ask DocuBot</h2>
+        <div class="chat-window" id="chat-window" style="display: flex; flex-direction: column;"></div>
+        <form id="chat-form">
+          <input type="text" id="question-input" name="question" placeholder="Type your question here..." required>
+          <button type="submit">Send Message</button>
+        </form>
+      </section>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById("upload-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const fileInput = document.getElementById("file-input");
+    const formData = new FormData();
+    
+    // Loop through all selected files
+    for (const file of fileInput.files) {
+        formData.append("files", file);
+    }
+    
+    try {
+        // Update the endpoint if needed (see below)
+        const response = await fetch("/upload-multiple", {
+        method: "POST",
+        body: formData
+        });
+        const result = await response.json();
+        document.getElementById("upload-result").innerText = result.message || result.error;
+    } catch (err) {
+        document.getElementById("upload-result").innerText = "Upload failed. Please try again.";
+    }
+});
+    
+    // Handle chat queries
+    document.getElementById("chat-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const questionInput = document.getElementById("question-input");
+      const question = questionInput.value;
+      const formData = new FormData();
+      formData.append("question", question);
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        const chatWindow = document.getElementById("chat-window");
+        
+        // Append user message
+        const userMessage = document.createElement("div");
+        userMessage.className = "chat-message user-message";
+        userMessage.innerText = question;
+        chatWindow.appendChild(userMessage);
+        
+        // Append bot message
+        const botMessage = document.createElement("div");
+        botMessage.className = "chat-message bot-message";
+        botMessage.innerText = result.answer || result.error;
+        chatWindow.appendChild(botMessage);
+        
+        // Clear the input and scroll to bottom
+        questionInput.value = "";
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      } catch (err) {
+        alert("Error communicating with DocuBot. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
